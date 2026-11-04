@@ -1,0 +1,289 @@
+TABLE OF CONTENTS
+=================
+1. Graph definition
+2. Tree = special case of graph
+3. Edge <-> vertex formulas
+4. Space complexity: adj list vs adj matrix
+5. BFS vs DFS -- one-line definitions
+6. BFS vs DFS -- when to use which
+7. Avoiding TLE: adj matrix vs adj list
+8. DFS path signature needs a backtrack marker (Number of Distinct Islands)
+9. Cycle detection -- undirected graph (DFS and BFS)
+10. Cycle detection -- directed graph (DFS)
+
+
+PART 1: GRAPH DEFINITION
+========================
+1.1 Definition
+G = (V, E) -- Vertices (nodes) + Edges (connections between vertex pairs).
+
+1.2 Properties to clarify per problem
+- Directed (u->v one-way) vs Undirected (u-v both ways)
+- Weighted (edges have cost) vs Unweighted (every hop = 1)
+- Cyclic (has a loop) vs Acyclic (no loop, DAG if also directed)
+- Connected (all reachable) vs Disconnected (2+ components)
+Any combo is valid -- these are independent properties, not exclusive types.
+
+
+PART 2: TREE = SPECIAL CASE OF GRAPH
+====================================
+2.1 Definition
+Tree = Connected + Acyclic + Undirected + exactly V-1 edges.
+All trees are graphs; not all graphs are trees.
+
+2.2 Key fact
+Connected graph with <= V-1 edges => must be a tree (no cycle possible).
+  Used in: 1319 -- if connections.size() < n-1, impossible to connect all nodes.
+
+2.3 Grids are graphs too
+Grids = graphs too (cell = vertex, up/down/left/right = edges).
+Same DFS/BFS machinery works on grids, edge-lists, and adjacency matrices -- only "how you find a node's neighbors" changes.
+
+
+PART 3: EDGE <-> VERTEX FORMULAS
+================================
+Tree (connected, acyclic):     E = V - 1
+Max edges, simple undirected:  E <= V(V-1)/2
+Max edges, simple directed:    E <= V(V-1)
+
+
+PART 4: SPACE COMPLEXITY: ADJ LIST vs ADJ MATRIX
+================================================
+4.1 Formulas
+Adj List   = O(V + E)  exact: V + 2E (undirected) | V + E (directed)
+Adj Matrix = O(V^2)    always fixed, independent of E
+Adj Matrix is always V x V (rows = columns = V) -- symmetric only if undirected, matrix[i][j] may differ from matrix[j][i] if directed.
+
+4.2 Example, V=5
+  Cyclic (5-ring, E=5):  List = 5+10 = 15 units | Matrix = 25 cells
+  Acyclic (5-tree, E=4): List = 5+8  = 13 units | Matrix = 25 cells (unchanged)
+
+4.3 Which to use
+Adjacency Matrix: use only when dense graph or need O(1) edge lookup.
+Adjacency List: default choice (99% of problems), sparse-graph friendly.
+
+
+PART 5: BFS vs DFS -- ONE-LINE DEFINITIONS
+==========================================
+BFS: pushes ALL neighbor nodes to the queue, uses a QUEUE.
+DFS: pushes nodes along a path until that path is exhausted completely, uses RECURSION.
+
+
+PART 6: BFS vs DFS -- WHEN TO USE WHICH
+=======================================
+6.1 BFS mechanics
+Explicit queue (FIFO). Push ALL unvisited neighbors of current node, mark visited AT PUSH TIME (not pop -- avoids duplicate queue entries). Processes nearest nodes first => guarantees shortest path on first visit.
+
+6.2 DFS mechanics
+Recursion (call stack = stack) or explicit stack (LIFO). Dives into ONE neighbor fully before trying the next.
+       void dfs(u): visited[u]=true; for v in adj[u]: if !visited[v]: dfs(v)
+
+   PAY ATTENTION Who writes what in recursive DFS:
+   - A dfs(u) call WRITES only its OWN state (visited[u] / color[u]) -- done once, at the top of the call.
+   - Inside the for loop it only READS the neighbor's state (visited[v] / color[v]) to decide: recurse, skip, or flag a conflict/cycle.
+   - It does NOT write the adjacent nodes' state. The neighbor writes its own entry when ITS call starts (dfs(v) -> visited[v]=true).
+   - Bipartite coloring looks like the parent colors the neighbor, but it doesn't: parent passes the color DOWN as an argument (dfs(v, !col)),
+     and the child stores it on itself (color[v]=col).
+   - Optional variant: parent marks visited[v]=true just before dfs(v). Same result, but then the start node must be marked before the first call.
+   Rule of thumb: write visited[node] at the top of dfs(node); in the loop only read visited[nb].
+
+6.3 Decision guide
+Ask: do I need SHORTEST PATH/DISTANCE, or STRUCTURE/PATH-REASONING?
+  -> Shortest path / min steps (unweighted)        => BFS
+  -> Just "does a path exist" / reachability        => either (BFS/DFS both fine)
+  -> Count components / explore full group          => either (DFS = less code)
+  -> Cycle detection                                 => DFS (recursion stack = path context)
+  -> Topological sort                                => DFS (postorder) or BFS (Kahn's/in-degree)
+  -> Multi-source / "time to reach everything"       => BFS (multi-source)
+  -> Backtracking (permutations, combos, undo logic) => DFS
+
+6.4 Mental model
+BFS = ripples spreading outward (wavefront). DFS = one explorer going as deep as possible, backing out only when stuck.
+
+
+PART 7: AVOIDING TLE: ADJ MATRIX vs ADJ LIST
+============================================
+7.1 Time budget
+LeetCode time budget ~= 10^8 ops/sec. Adjacency matrix build+traverse = O(V^2). V^2 <= 10^8 roughly when V ~ 10^4 -- but memory usually breaks first.
+
+7.2 N constraint -> representation to pick
+  n <= ~1,000       -> Adj Matrix fine (time AND memory trivial, V^2 <= 10^6)
+  n ~ 1,000-5,000    -> Adj Matrix OK for time, but use vector<bool>/bitset not vector<vector<int>> (int matrix at V=5000 ~= 100MB)
+  n ~ 5,000-10,000   -> Risky (V^2 up to 1e8) -- memory limit (~256MB) likely blocks it
+  n > 10,000 (most common: n <= 1e5) -> MUST use Adj List, O(V+E). Matrix impossible.
+
+7.3 Rule of thumb
+If problem gives n <= 1000, matrix is safe. If n <= 1e5 (very common constraint), matrix is off the table -- adjacency list is mandatory.
+
+
+PART 8: DFS PATH SIGNATURE NEEDS BACKTRACK MARKER (DSA problem name: Number of Distinct Islands)
+================================================================================================
+8.1 The rule
+When you serialize a DFS as a shape fingerprint, record BOTH going down into a cell AND returning back up (e.g. append "X" after every recursive call). Moves alone are ambiguous.
+
+8.2 Why
+"B" then "R" could mean R taken from the parent cell (L-shape: BXRX) or from the child cell (BRXX) -- without the marker both give "BR", so different shapes collapse into one and the count comes out too low (got 12, expected 13).
+
+8.3 Alternative
+Same reason trees need null markers to be serialized (LeetCode 297). Alternative: store cell coords relative to the island's start cell (i-i0, j-j0) in a set -- positions encode the shape directly, no markers needed.
+
+8.4 Clean pattern: parallel direction arrays + one loop instead of 4 copy-pasted if-blocks (index d lines up across all three arrays)
+    string findShapeOfIsland(int i, int j, vector<vector<char>>& grid) {
+        static const vector<vector<int>> dirs = {{-1,0}, {1,0},  {0,1}, {0,-1}};
+        static const char mv[] = {'T', 'B', 'R', 'L'};
+        
+        string islandPath = "";
+        for(int label = 0; label < 4; label++) {
+            int x = i + dirs[label][0];
+            int y = j + dirs[label][1];
+            
+            if(x>=0 && y>=0 && x <grid.size() && y<grid[0].size() && grid[x][y] == 'L'){
+                // using this to avoid having separate visited array
+                grid[x][y] = 'W';
+                islandPath += mv[label] + findShapeOfIsland(x,y, grid) + "x";
+            }
+        }
+        return islandPath;
+    }
+
+8.5 Also
+Append to ONE shared string& path (not return + concatenate -- that copies the child's string at every level, O(K^2) on a snake island), and mark visited by flipping 'L' -> 'W' in place (mutates input, ask first).
+
+
+PART 9: CYCLE DETECTION -- UNDIRECTED GRAPH (DFS and BFS)
+=========================================================
+
+9.1 CORE IDEA (same for DFS and BFS)
+------------------------------------
+Traversal builds a tree: every node is discovered via exactly ONE edge (its parent edge).
+Any edge to an already-visited node that is NOT my parent = a second path to that node = CYCLE.
+
+9.2 WHY SKIP THE PARENT
+-----------------------
+In an undirected graph the edge u-parent appears in both adjacency lists. It is the same edge that discovered u, not a second path. Without the skip, every edge would look like a cycle.
+
+9.3 SETUP RULES
+---------------
+- Outer loop over ALL nodes (graph may be disconnected), start a DFS/BFS only from unvisited nodes.
+- Mark visited ON ENTRY (DFS) / AT PUSH (BFS).
+- Start node has no parent: use -1.
+
+9.4 DFS VERSION
+---------------
+  bool dfs(int u, int parent) {
+      vis[u] = true;
+      for (int v : adj[u]) {
+          if (!vis[v]) {
+              if (dfs(v, u)) return true;
+          } else if (v != parent) {
+              return true;              // visited and not my parent: second path
+          }
+      }
+      return false;
+  }
+
+9.5 BFS VERSION (queue holds {node, parent})
+--------------------------------------------
+  queue<pair<int,int>> q;
+  q.push({start, -1});
+  vis[start] = true;                    // mark at push
+  while (!q.empty()) {
+      auto [u, parent] = q.front(); q.pop();
+      for (int v : adj[u]) {
+          if (!vis[v]) {
+              vis[v] = true;
+              q.push({v, u});
+          } else if (v != parent) {
+              return true;              // visited and not my parent: second path
+          }
+      }
+  }
+
+9.6 COMPLEXITY
+--------------
+- Time: O(V+E).
+- Space: visited O(V) + DFS recursion stack up to O(V) deep (BFS queue holds only the frontier).
+- It is a SUM, not a product: each node is processed once across ALL outer-loop starts combined, so the outer loop x traversal does not multiply.
+
+9.7 DIRECTED GRAPHS -- THIS DOES NOT WORK
+-----------------------------------------
+Reaching a visited node is not a cycle in a directed graph. Use 3-state DFS (unvisited / on-stack / done) or Kahn's in-degree peeling. Union-Find is undirected only.
+
+9.8 GRID VERSION (1559 Detect Cycles in 2D Grid)
+------------------------------------------------
+Cell = node, neighbor = adjacent cell (up/down/left/right) with the SAME letter, parent = the cell you came from (store as a flat id).
+
+9.8a Visited as a 1D array
+  - vector<bool> vis(n*m), cell id = i*cols + j  (cols = number of COLUMNS, not i*j + j).
+  - One int id also lets you carry the parent as a single int (-1 for the start cell).
+  - Compute cur = i*m + j once and reuse it everywhere.
+  - vector<vector<bool>> is more readable (vis[i][j], no formula to mistype); flat is one allocation and slightly faster. vector<char> is faster than either (no bit packing) at 8x memory.
+
+9.8b Bugs seen
+  - i*j+j maps every cell in column 0 to id 0, so unrelated cells share one visited slot.
+  - static const int nCols = grid[0].size() inside the function freezes at the FIRST test case's width (static locals init once per process). static is only for input-independent constants (direction arrays); input-dependent sizes must be normal locals or members.
+
+9.8c Direction arrays for neighbors (readable, no copy-pasted if-blocks)
+  static const int rows[] = {1, -1, 0, 0};   // NOT [1,-1,0,0] -- curly braces for initializer
+  static const int cols[] = {0, 0, 1, -1};
+  for (int d = 0; d < 4; d++) {
+      int x = i + rows[d];
+      int y = j + cols[d];
+      if (x < 0 || y < 0 || x >= n || y >= m) continue;   // out of bounds
+      ...
+  }
+  Index d lines up across both arrays (down, up, right, left). Add a third char mv[] if you also need a label per move.
+
+
+PART 10: CYCLE DETECTION -- DIRECTED GRAPH (DFS)
+================================================
+
+10.1 CORE IDEA
+--------------
+A cycle exists only if DFS revisits a node that is on the SAME PATH it is currently walking (the current recursion stack). Revisiting a node that was finished on some earlier, different path is NOT a cycle.
+
+10.2 WHY plain visited[] IS NOT ENOUGH
+--------------------------------------
+Two different paths can legitimately lead into the same node without any loop:
+  A -> B, A -> C, C -> B      (B is reached twice, no cycle)
+visited[B] is already true when we reach it a second time, but we are no longer "inside" B's path, so it is fine.
+Real cycle:  A -> B -> C -> A  (we come back to A while A is still on the stack).
+
+10.3 THREE STATES PER NODE
+--------------------------
+  0 = unvisited
+  1 = visiting  (on the current DFS path / recursion stack)
+  2 = done      (fully explored, popped off the path)
+Cycle <=> we reach a node with state 1 (a back edge).
+
+10.4 DFS VERSION
+----------------
+  bool dfs(int u) {
+      state[u] = 1;                         // enter: now on the current path
+      for (int v : adj[u]) {
+          if (state[v] == 1) return true;   // back on the same path: cycle
+          if (state[v] == 0 && dfs(v)) return true;
+          // state[v] == 2: already finished on another path, safe to skip
+      }
+      state[u] = 2;                         // exit: leave the current path
+      return false;
+  }
+
+  Driver: for every node u with state[u] == 0, call dfs(u); if any returns true, graph has a cycle.
+
+10.5 THE KEY STEP
+-----------------
+state[u] = 2 on the way out is the "undo". It removes u from the current path, so reaching u again later via a different route is not flagged.
+
+10.6 COMPLEXITY
+---------------
+Time O(V+E), space O(V) for state[] plus up to O(V) recursion depth.
+
+10.7 USED IN
+------------
+207 Course Schedule (cycle => cannot finish), 210 Course Schedule II (same check + topological order), 802 Find Eventual Safe States (nodes that cannot reach a cycle).
+
+10.8 UNDIRECTED vs DIRECTED
+---------------------------
+  Undirected: "visited and not my parent" is a cycle.
+  Directed:   "currently on my path (state 1)" is a cycle. No parent check, because edges only go one way.

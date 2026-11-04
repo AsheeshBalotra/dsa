@@ -1,0 +1,66 @@
+GRAPH PREP TODO -- GOOGLE L4
+==============================
+
+DONE
+----
+[x] Adjacency List representation
+[x] Adjacency Matrix representation
+[x] BFS traversal
+[x] DFS traversal
+[x] Multi-source BFS
+[x] 547  Number of Provinces
+[x] 1971 Find if Path Exists in Graph
+[x] 1319 Number of Operations to Make Network Connected
+[x] 994  Rotting Oranges (multi-source BFS)
+[x] Connected components counting (DFS/BFS + outer loop)- 200  Number of Islands
+    
+
+TIER 1 -- MUST KNOW
+--------------------
+
+[ ] Cycle detection -- undirected (DFS+parent, or Union-Find)
+    - 684  Redundant Connection
+[ ] Cycle detection -- directed (DFS, 3-state: unvisited/in-stack/done)
+    - 841  Keys and Rooms (reachability, do before 207)
+    - 207  Course Schedule
+[ ] Topological sort (DFS postorder reversed, OR Kahn's BFS+in-degree)
+    - 210  Course Schedule II
+[ ] Union-Find / DSU (path compression + union by rank)
+    - 684  Redundant Connection
+    - 721  Accounts Merge
+[ ] Dijkstra's algorithm (priority queue, non-negative weights)
+    - 743  Network Delay Time
+    - 1631 Path With Minimum Effort
+[ ] Bipartite check (2-coloring via BFS/DFS)
+    - 785  Is Graph Bipartite
+    - 886  Possible Bipartition
+
+
+TIER 2 -- SHOULD KNOW
+-----------------------
+[ ] Minimum Spanning Tree (Kruskal's w/ Union-Find, or Prim's w/ priority queue)
+    - 1584 Min Cost to Connect All Points
+[ ] Implicit-graph BFS (neighbors generated on the fly, not given)
+    - 127  Word Ladder
+[ ] 0-1 BFS (deque-based, weights only 0 or 1 -- cheaper than Dijkstra)
+[ ] Bellman-Ford basics (negative weights, negative-cycle detection)
+    - 787  Cheapest Flights Within K Stops
+
+
+TIER 3 -- NICE TO HAVE (rare at L4, just recognize the name)
+---------------------------------------------------------------
+[ ] Articulation points / bridges (Tarjan's) -- "critical connections"
+[ ] Strongly Connected Components (Tarjan's / Kosaraju's)
+[ ] Floyd-Warshall (all-pairs shortest path, O(V^3))
+[ ] Max flow / min cut -- skip unless role-specific
+
+
+SUGGESTED ORDER FROM HERE
+---------------------------
+1. 684 Redundant Connection, 841 Keys and Rooms, 207 Course Schedule
+   (closes out Tier 1 cycle detection + Union-Find)
+2. 210 Course Schedule II (topological sort, same DFS skeleton as 207)
+3. 743 Network Delay Time (Dijkstra -- biggest net-new concept)
+4. 785 Is Graph Bipartite (quick, different flavor: 2-coloring)
+5. 721 Accounts Merge (Union-Find + string/hashmap bookkeeping combo)
+6. 1584 Min Cost to Connect All Points (MST, lower priority)
