@@ -32,7 +32,7 @@ Tree = Connected + Acyclic + Undirected + exactly V-1 edges.
 All trees are graphs; not all graphs are trees.
 
 2.2 Key fact
-Connected graph with <= V-1 edges => must be a tree (no cycle possible).
+Connected graph with exactly V-1 edges => must be a tree (no cycle possible).
   Used in: 1319 -- if connections.size() < n-1, impossible to connect all nodes.
 
 2.3 Grids are graphs too
@@ -78,7 +78,7 @@ Explicit queue (FIFO). Push ALL unvisited neighbors of current node, mark visite
 Recursion (call stack = stack) or explicit stack (LIFO). Dives into ONE neighbor fully before trying the next.
        void dfs(u): visited[u]=true; for v in adj[u]: if !visited[v]: dfs(v)
 
-   PAY ATTENTION Who writes what in recursive DFS:
+   PAY ATTENTION: who writes what in recursive DFS:
    - A dfs(u) call WRITES only its OWN state (visited[u] / color[u]) -- done once, at the top of the call.
    - Inside the for loop it only READS the neighbor's state (visited[v] / color[v]) to decide: recurse, skip, or flag a conflict/cycle.
    - It does NOT write the adjacent nodes' state. The neighbor writes its own entry when ITS call starts (dfs(v) -> visited[v]=true).
@@ -111,9 +111,6 @@ LeetCode time budget ~= 10^8 ops/sec. Adjacency matrix build+traverse = O(V^2). 
   n ~ 1,000-5,000    -> Adj Matrix OK for time, but use vector<bool>/bitset not vector<vector<int>> (int matrix at V=5000 ~= 100MB)
   n ~ 5,000-10,000   -> Risky (V^2 up to 1e8) -- memory limit (~256MB) likely blocks it
   n > 10,000 (most common: n <= 1e5) -> MUST use Adj List, O(V+E). Matrix impossible.
-
-7.3 Rule of thumb
-If problem gives n <= 1000, matrix is safe. If n <= 1e5 (very common constraint), matrix is off the table -- adjacency list is mandatory.
 
 
 PART 8: DFS PATH SIGNATURE NEEDS BACKTRACK MARKER (DSA problem name: Number of Distinct Islands)
@@ -223,16 +220,8 @@ Cell = node, neighbor = adjacent cell (up/down/left/right) with the SAME letter,
   - i*j+j maps every cell in column 0 to id 0, so unrelated cells share one visited slot.
   - static const int nCols = grid[0].size() inside the function freezes at the FIRST test case's width (static locals init once per process). static is only for input-independent constants (direction arrays); input-dependent sizes must be normal locals or members.
 
-9.8c Direction arrays for neighbors (readable, no copy-pasted if-blocks)
-  static const int rows[] = {1, -1, 0, 0};   // NOT [1,-1,0,0] -- curly braces for initializer
-  static const int cols[] = {0, 0, 1, -1};
-  for (int d = 0; d < 4; d++) {
-      int x = i + rows[d];
-      int y = j + cols[d];
-      if (x < 0 || y < 0 || x >= n || y >= m) continue;   // out of bounds
-      ...
-  }
-  Index d lines up across both arrays (down, up, right, left). Add a third char mv[] if you also need a label per move.
+9.8c Direction arrays for neighbors: same pattern as 8.4.
+  Use curly braces for the initializer: static const int rows[] = {1, -1, 0, 0};   // NOT [1,-1,0,0]
 
 
 PART 10: CYCLE DETECTION -- DIRECTED GRAPH (DFS)

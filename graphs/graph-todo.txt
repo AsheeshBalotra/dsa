@@ -12,7 +12,8 @@ DONE
 [x] 1971 Find if Path Exists in Graph
 [x] 1319 Number of Operations to Make Network Connected
 [x] 994  Rotting Oranges (multi-source BFS)
-[x] Connected components counting (DFS/BFS + outer loop)- 200  Number of Islands
+[x] Connected components counting (DFS/BFS + outer loop)
+    - 200  Number of Islands
     
 
 TIER 1 -- MUST KNOW

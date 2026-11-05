@@ -275,8 +275,6 @@ C++ REFRESHER NOTES
   TERMINOLOGY IS PAIRED (DSA convention):
     Top-down  == Recursive + memoization
     Bottom-up == Iterative + tabulation
-  "Iterative DP" and "bottom-up DP" are interchangeable. "Recursive
-  DP"/"memoized recursion" and "top-down DP" are interchangeable.
 
 
 11. RECURSION DIRECTION: RECURSION ITSELF IS NOT INHERENTLY TOP-DOWN
@@ -570,9 +568,9 @@ C++ REFRESHER NOTES
 
   WHY the loop guard needs BOTH conditions
   (fast != nullptr && fast->next != nullptr):
-  fast->next!=nullptr alone crashes on odd-length lists (fast itself
+  fast->next!=nullptr alone crashes on even-length lists (fast itself
   could be null, then fast->next is UB). fast!=nullptr alone crashes
-  on even-length lists (fast->next could be null while fast isn't,
+  on odd-length lists (fast->next could be null while fast isn't,
   then fast->next->next dereferences null). Both together handle
   both parities safely.
 
@@ -648,8 +646,7 @@ C++ REFRESHER NOTES
   enumeration (bit i = "include element i or not", enumerate 0 to
   2^n-1), DP with bitmask state (e.g. TSP-style problems).
 
-  Gotchas: ~n flips all 32 bits including sign, result isn't "small".
-  Right-shifting negative numbers is implementation-defined
+  Gotchas: right-shifting negative numbers is implementation-defined
   pre-C++20 for exact rounding but arithmetic shift is universal in
   practice. `1 << 31` overflows signed 32-bit int (UB) -- use
   `1u << 31` or `1LL << 31` if that range is needed.
@@ -884,9 +881,6 @@ C++ REFRESHER NOTES
       children of idx2: idx5=7 (idx6 doesn't exist); 8>7, property
         holds -> stop
 
-  top() is O(1) -- the max (or min) is ALWAYS at index 0 by the heap
-  property, no search needed.
-
   COMPLEXITY SUMMARY
     top()            O(1)
     push()           O(log n)
@@ -915,12 +909,9 @@ C++ REFRESHER NOTES
       classic "top-k" / "streaming" / "always need current best"
       workload
 
-  Heap wins specifically when you need MANY interleaved inserts and
-  removals of the extreme value -- a sorted vector pays O(n) per
-  insert to stay sorted, while a heap only pays O(log n). If you only
-  need the max ONCE with no further inserts, even an unsorted vector
-  + single O(n) scan (max_element) beats building a heap for no
-  reason.
+  If you only need the max ONCE with no further inserts, even an
+  unsorted vector + single O(n) scan (max_element) beats building a
+  heap for no reason.
 
   TOP-K PATTERN MNEMONIC (using a bounded-size heap)
     "k SMALLEST" -> use a MAX-heap of size k: push every element, if
@@ -1046,8 +1037,8 @@ C++ REFRESHER NOTES
 -------------------------------------------------------------------
   BFS vs DFS -- CORE DIFFERENCE: the order you visit nodes in.
   BFS uses a QUEUE to visit the CLOSEST nodes first (explores level
-  by level, outward in rings from the start). DFS pretty much skips
-  past some nodes next door and follows a single path all the way
+  by level, outward in rings from the start). DFS skips past nearby
+  nodes and follows a single path all the way
   until it hits a dead end, before backtracking to try others.
 
   CLASSIC BUG ("delayed marking"): marking a cell/node as visited
@@ -1069,10 +1060,8 @@ C++ REFRESHER NOTES
   it's ever processed. Same cell ends up enqueued multiple times.
 
   Concrete example: a 2x2 block of land, all connected --
-    (0,0) and (0,1) are both neighbors of (1,0) and (1,1). If you
-    mark on pop, by the time (1,0) is processed, (0,0), (0,1), AND
-    (1,1) can all have already pushed it a second/third time before
-    the first copy is popped.
+    (1,1) has two neighbors, (0,1) and (1,0). If you mark on pop,
+    both can push (1,1) before its first copy is popped.
 
   IMPACT: queue size balloons well past O(m*n) (duplicate entries
   for the same cells), degrading what should be an O(m*n) BFS into

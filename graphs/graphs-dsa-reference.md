@@ -208,7 +208,7 @@ class UnionFind {
 public:
     vector<int> parent, rank;
     int components;
-    
+
     UnionFind(int n) {
         parent.resize(n);
         rank.resize(n, 0);
@@ -217,18 +217,18 @@ public:
             parent[i] = i; // Each node is its own parent initially
         }
     }
-    
+
     int find(int x) {
         if(parent[x] != x) {
             parent[x] = find(parent[x]); // Path compression
         }
         return parent[x];
     }
-    
+
     void unionNodes(int x, int y) {
         int rootX = find(x);
         int rootY = find(y);
-        
+
         if(rootX != rootY) {
             components--; // Merge two components into one
             // Union by rank
@@ -242,11 +242,11 @@ public:
             }
         }
     }
-    
+
     bool connected(int x, int y) {
         return find(x) == find(y);
     }
-    
+
     int countComponents() {
         return components;
     }
@@ -274,13 +274,13 @@ bool bfs(vector<vector<int>>& graph, int start, int target) {
     queue<int> q;
     q.push(start);
     visited[start] = true;
-    
+
     while(!q.empty()) {
         int current = q.front();
         q.pop();
-        
+
         if(current == target) return true;
-        
+
         for(int neighbor : graph[current]) {
             if(!visited[neighbor]) {
                 visited[neighbor] = true;
@@ -296,7 +296,7 @@ bool bfs(vector<vector<int>>& graph, int start, int target) {
 ```cpp
 void dfs(vector<vector<int>>& graph, int node, vector<bool>& visited) {
     visited[node] = true;
-    
+
     for(int neighbor : graph[node]) {
         if(!visited[neighbor]) {
             dfs(graph, neighbor, visited);
@@ -311,10 +311,10 @@ int countComponents(int n, vector<vector<int>>& edges) {
         graph[edge[0]].push_back(edge[1]);
         graph[edge[1]].push_back(edge[0]);
     }
-    
+
     vector<bool> visited(n, false);
     int components = 0;
-    
+
     for(int i = 0; i < n; i++) {
         if(!visited[i]) {
             components++;
@@ -330,7 +330,7 @@ int countComponents(int n, vector<vector<int>>& edges) {
 int multiBFS(vector<vector<int>>& grid) {
     int m = grid.size(), n = grid[0].size();
     queue<pair<int,int>> q;
-    
+
     // Add all sources to queue
     for(int i = 0; i < m; i++) {
         for(int j = 0; j < n; j++) {
@@ -339,21 +339,21 @@ int multiBFS(vector<vector<int>>& grid) {
             }
         }
     }
-    
+
     int time = 0;
     int dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
-    
+
     while(!q.empty()) {
         int size = q.size();
         for(int i = 0; i < size; i++) {
             auto [x, y] = q.front();
             q.pop();
-            
+
             for(int d = 0; d < 4; d++) {
                 int nx = x + dirs[d][0];
                 int ny = y + dirs[d][1];
-                
-                if(nx >= 0 && nx < m && ny >= 0 && ny < n && 
+
+                if(nx >= 0 && nx < m && ny >= 0 && ny < n &&
                    grid[nx][ny] == TARGET_VALUE) {
                     grid[nx][ny] = NEW_VALUE;
                     q.push({nx, ny});
@@ -416,7 +416,6 @@ When you see a graph problem, ask:
 ### ✅ Completed Problems
 
 #### 547. Number of Provinces (BFS with adjacency matrix)
-**Date Completed:** [Track your completion]  
 **Key Learnings:**
 - Given adjacency matrix directly (isConnected[i][j])
 - Count connected components by starting BFS from each unvisited node
@@ -430,35 +429,6 @@ When you see a graph problem, ask:
 - O(V + E) space complexity deeply understood
 - BFS pattern: visited tracking at push time prevents duplicates
 - Early termination when destination found
-
-**Code Template:**
-```cpp
-// Build adjacency list
-vector<vector<int>> adjList(n);
-for(auto& edge : edges) {
-    adjList[edge[0]].push_back(edge[1]);
-    adjList[edge[1]].push_back(edge[0]); // Undirected
-}
-
-// BFS traversal
-queue<int> q;
-vector<bool> visited(n, false);
-q.push(source);
-visited[source] = true;
-
-while(!q.empty()) {
-    int curr = q.front();
-    q.pop();
-    if(curr == destination) return true;
-    
-    for(int neighbor : adjList[curr]) {
-        if(!visited[neighbor]) {
-            visited[neighbor] = true;  // Mark at push time!
-            q.push(neighbor);
-        }
-    }
-}
-```
 
 #### 1319. Number of Operations to Make Network Connected (BFS with adjacency list, substituted for premium 323)
 **Date Completed:** Aug 18, 2026
@@ -480,13 +450,6 @@ while(!q.empty()) {
   faster, just a different implementation style) -- union directly on the raw edge list,
   no adjacency list needed at all, answer = uf.components - 1
 
-### 🎯 Next Up
-- [ ] **684. Redundant Connection** - Union-Find where you detect the EXACT edge creating a cycle. Natural fit for "if two nodes are already in the same group, this new edge is redundant" logic.
-- [ ] **994. Rotting Oranges** - Multi-source BFS (Tier 3), same shape as 01 Matrix -- revisit if skipped ahead to Union-Find track first.
-- [ ] **841. Keys and Rooms** / **207. Course Schedule** - Directed graph reachability + cycle detection (Tier 4) -- needs "currently in recursion stack" tracking, not just visited[].
-
-### 📋 Upcoming Problems (In Order)
-
 ### 📝 Key Learnings
 
 #### Graph Representation Deep Dive
@@ -501,11 +464,11 @@ while(!q.empty()) {
   - Example with V=5, E=6:
     ```
     adjList[0] = [1, 2]       // 2 elements
-    adjList[1] = [0, 3]       // 2 elements  
+    adjList[1] = [0, 3]       // 2 elements
     adjList[2] = [0, 3, 4]    // 3 elements
     adjList[3] = [1, 2, 4]    // 3 elements
     adjList[4] = [2, 3]       // 2 elements
-    
+
     Total: 5 vectors (V) + 12 integers (2E) = 17 units
     Matrix would be: 5×5 = 25 units
     ```
@@ -515,7 +478,7 @@ while(!q.empty()) {
   - Sparse graphs (E << V²) - most real-world graphs
   - LeetCode constraints like V ≤ 2×10⁵ would need 160GB for matrix!
   - Better BFS/DFS performance: O(V+E) vs O(V²)
-  
+
 - **Adjacency Matrix (rare):**
   - Dense graphs (E ≈ V²)
   - Need O(1) edge lookups frequently
@@ -549,16 +512,3 @@ for(auto& edge : edges) {
 - **Connected Components**: Loop through all nodes, increment counter for each unvisited start
 - **Path Finding**: Early return when target found, visited prevents cycles
 - **Multi-source BFS**: Add all starting points to queue simultaneously before main loop
-
-#### Union-Find Comparison
-- **Different paradigm**: Manages groups instead of traversing
-- **When to use**: Dynamic connectivity, cycle detection, grouping operations
-- **When NOT to use**: Shortest path problems (can't do it), simple traversal (overkill)
-- **Time**: O(α(n)) ≈ O(1) per operation with path compression + union by rank
-
-#### Pattern Recognition Framework
-Most graph problems are variations of:
-1. **Connectivity** → DFS/BFS or Union-Find
-2. **Shortest Path** → BFS (unweighted) or Dijkstra (weighted)
-3. **Cycle Detection** → DFS with recursion stack (directed) or DFS with parent tracking (undirected)
-4. **Topological Sort** → DFS + stack or BFS + in-degree
