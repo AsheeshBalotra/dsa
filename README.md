@@ -7,6 +7,9 @@ My data structures and algorithms notes from interview prep. All code is in C++.
 | If you want to... | Go to |
 |---|---|
 | Refresh C++ and common patterns | [CplusNotes.txt](CplusNotes.txt) |
+| Pick the next string or array problem to practise | [Checklist_String_Array.md](arrays-strings/Checklist_String_Array.md) |
+| Pick the next linked list, tree, backtracking, DP or graph problem | [Checklist_Other_Topics.md](Checklist_Other_Topics.md) |
+| See which coding mistakes I keep repeating | [My_DSA_Mistakes.md](My_DSA_Mistakes.md) |
 | Understand how graph algorithms work | [graph-notes.txt](graphs/graph-notes.txt) |
 | Find a graph template or problem type fast | [graphs-dsa-reference.md](graphs/graphs-dsa-reference.md) |
 | Pick the next graph problem to practise | [graph-todo.txt](graphs/graph-todo.txt) |
@@ -16,6 +19,10 @@ My data structures and algorithms notes from interview prep. All code is in C++.
 ```
 dsa/
 ├── CplusNotes.txt                C++ refresher and DSA patterns, 25 numbered sections
+├── Checklist_Other_Topics.md     linked lists, trees, backtracking, DP, graphs
+├── My_DSA_Mistakes.md            mistakes by problem, tagged with the pattern behind each
+├── arrays-strings/
+│   └── Checklist_String_Array.md core LeetCode problems by pattern, ticked when solved
 └── graphs/
     ├── graph-notes.txt           Graph concepts and the reasoning behind them
     ├── graphs-dsa-reference.md   Quick lookup: problem types, templates, Union-Find
