@@ -6,12 +6,12 @@ One problem per idea. A problem is **core** if it is widely asked (in two or mor
 **★** = in a "top 25 interview questions" list. Its other 13 are in [Checklist_Other_Topics.md](../Checklist_Other_Topics.md).
 **Difficulty:** E / M / H. **Premium** problems have a free copy on LintCode (number given).
 
-**Progress:** 15 of 42 core solved. Also solved: 6 extras, 3 warm-ups.
+**Progress:** 35 of 41 core solved. Also solved: 6 extras, 3 warm-ups.
 
 **Order:** at most two problems in a row from one section, solved ones skipped. The first builds the concept, the second tests it. Before coding, say which pattern it is and why.
 ```
-Round 1:  121, 3 → 20, 155 → 34, 33 → 56, 435 → 53, 55 → 54, 73 → 8, 271 → 5, 139 → 136 → 26, 75
-Round 2:  424, 76 → 739, 84 → 875 → 253 → 169 → 1143
+Round 1:  121, 3 → 20, 155 → 34, 33 → 56, 435 → 53, 55 → 54, 73 → 8 → 136 → 169 → 5, 139 → 75
+Round 2:  424, 76 → 739, 84 → 875 → 253 → 1143
 ```
 
 ---
@@ -50,8 +50,8 @@ Use when: range sums, products of "everything except me", "subarray sum equals k
 ## 3. Two pointers
 Use when: sorted array, pairs or triplets, comparing from both ends, or rewriting an array in place.
 
-- [ ] 26. Remove Duplicates from Sorted Array (E) [T]: read and write pointers, keep `nums[i]` only when it differs from the last kept value
-- [ ] 75. Sort Colors (M) [G]: three pointers in one pass, 0s swapped to the front and 2s to the back (Dutch national flag)
+- [x] 26. Remove Duplicates from Sorted Array (E) [T]: read and write pointers, keep `nums[i]` only when it differs from the last kept value [Needs revision]
+- [x] 75. Sort Colors (M) [G]: three pointers in one pass, 0s swapped to the front and 2s to the back (Dutch national flag)
 - [x] 15. 3Sum (M) [B G N T] ★: sort, fix one, two pointers, skip duplicates
 - [x] 11. Container With Most Water (M) [B G N T] ★: move the shorter side
 - [x] 42. Trapping Rain Water (H) [G N T] ★: water = min(maxL, maxR) - h[i], only the smaller max matters: two pointers, settle the smaller side
@@ -60,65 +60,64 @@ Use when: sorted array, pairs or triplets, comparing from both ends, or rewritin
 Use when: "longest / shortest / count of subarray or substring with a condition".
 Fixed size: add the new element, remove the old one. Variable size: grow right, shrink left while invalid.
 
-- [ ] 121. Best Time to Buy and Sell Stock (E) [B G N T]: track the minimum so far
-- [ ] 3. Longest Substring Without Repeating Characters (M) [B G N T] ★: last-seen index
-- [ ] 424. Longest Repeating Character Replacement (M) [B N] ★: window size - max freq <= k
+- [x] 121. Best Time to Buy and Sell Stock (E) [B G N T]: track the minimum so far
+- [x] 3. Longest Substring Without Repeating Characters (M) [B G N T] ★: last-seen index
+- [x] 424. Longest Repeating Character Replacement (M) [B N] ★: window size - max freq <= k [Needs revision]
 - [ ] 76. Minimum Window Substring (H) [B G N T] ★: need and have counts
 
 ## 5. Stack and monotonic stack
 Use when: matching brackets, evaluating expressions, "next greater / smaller element".
 
-- [ ] 20. Valid Parentheses (E) [B G N T]: stack of open brackets
-- [ ] 155. Min Stack (M) [G N T]: store the minimum with each value
+- [x] 20. Valid Parentheses (E) [B G N T]: stack of open brackets
+- [x] 155. Min Stack (M) [G N T]: store the minimum with each value
 - [ ] 739. Daily Temperatures (M) [N]: stack of indexes, monotonic decreasing
 - [ ] 84. Largest Rectangle in Histogram (H) [G N]: previous and next smaller
 
 ## 6. Binary search
 Use when: sorted data, or "find the minimum value that works" (search on the answer).
 
-- [ ] 34. Find First and Last Position of Element in Sorted Array (M) [T]: lower and upper bound, `mid = lo + (hi - lo) / 2`
-- [ ] 33. Search in Rotated Sorted Array (M) [B G N T] ★: find the sorted half
+- [x] 34. Find First and Last Position of Element in Sorted Array (M) [T]: lower and upper bound, `mid = lo + (hi - lo) / 2`
+- [x] 33. Search in Rotated Sorted Array (M) [B G N T] ★: find the sorted half [Needs revision]
 - [ ] 875. Koko Eating Bananas (M) [N] ★: binary search on the answer
 
 ## 7. Merge intervals
 Use when: ranges, overlaps, meetings, scheduling. Usually sort by start first.
 
-- [ ] 56. Merge Intervals (M) [B G N T]: sort, extend or start new
-- [ ] 435. Non-overlapping Intervals (M) [B N]: sort by end, greedy
+- [x] 56. Merge Intervals (M) [B G N T]: sort, extend or start new
+- [x] 435. Non-overlapping Intervals (M) [B N]: sort by end, greedy
 - [ ] 253. Meeting Rooms II (M) [B N], premium, free as LintCode 919: sort starts and ends, or min-heap
 
 ## 8. Kadane and greedy on arrays
 Use when: best sum or reach over a contiguous range, local choice gives the global answer.
 
-- [ ] 169. Majority Element (E) [G T]: keep a candidate and a count, +1 for the same value, -1 for a different one, new candidate when the count hits 0
-- [ ] 53. Maximum Subarray (M) [B G N T]: Kadane, restart when sum < 0
-- [ ] 55. Jump Game (M) [B N T]: track the farthest reachable index
+- [x] 169. Majority Element (E) [G T]: keep a candidate and a count, +1 for the same value, -1 for a different one, new candidate when the count hits 0
+- [x] 53. Maximum Subarray (M) [B G N T]: Kadane, restart when sum < 0
+- [x] 55. Jump Game (M) [B N T]: track the farthest reachable index [Needs revision]
 
 ## 9. Matrix and in-place arrays
 Use when: 2D grids, or O(1) extra space is required.
 
-- [ ] 54. Spiral Matrix (M) [B G N T]: four boundaries
-- [ ] 73. Set Matrix Zeroes (M) [B N T]: use first row and column as markers
+- [x] 54. Spiral Matrix (M) [B G N T]: four boundaries [Needs revision]
+- [x] 73. Set Matrix Zeroes (M) [B N T]: use first row and column as markers [Needs revision]
 
 ## 10. String manipulation and conversion
 Use when: parsing, digits stored as strings, overflow.
 
 - [x] 7. Reverse Integer (M) [N]: pop digits, check overflow before `* 10`
 - [x] 151. Reverse Words in a String (M) [T]: reverse all, then each word
-- [ ] 8. String to Integer (atoi) (M) [G]: sign, leading zeros, clamp on overflow (the edge-case drill)
-- [ ] 271. Encode and Decode Strings (M) [B N], premium, free as LintCode 659: length prefix like `4#abcd`
+- [x] 8. String to Integer (atoi) (M) [G]: sign, leading zeros, clamp on overflow (the edge-case drill)
 
 ## 11. Palindromes and string DP
 Use when: best substring or subsequence, or "can this string be built / matched".
 
-- [ ] 5. Longest Palindromic Substring (M) [B G N T]: expand around each center
-- [ ] 139. Word Break (M) [B G N T]: `dp[i]` = can split `s[0..i)`
+- [x] 5. Longest Palindromic Substring (M) [B G N T]: expand around each center
+- [x] 139. Word Break (M) [B G N T]: `dp[i]` = can split `s[0..i)` [Needs revision]
 - [ ] 1143. Longest Common Subsequence (M) [B N]: 2D DP
 
 ## 12. Bits (see Notes_bits.md)
 
 - [x] 231. Power of Two (E): `n > 0 && (n & (n - 1)) == 0`
-- [ ] 136. Single Number (E) [N T]: XOR everything
+- [x] 136. Single Number (E) [N T]: XOR everything
 
 ---
 
@@ -145,6 +144,7 @@ Do these only after the core, picked in random order, to practise choosing the t
 - [ ] 287. Find the Duplicate Number (M) [N]: Floyd cycle detection, do it after 141 Linked List Cycle
 - [x] 13. Roman to Integer (E) [T]: subtract if smaller than next
 - [ ] 14. Longest Common Prefix (E) [T]: compare character by character
+- [ ] 271. Encode and Decode Strings (M) [B N], premium, free as LintCode 659: length prefix like `4#abcd`, read in parts as in 8
 - [ ] 43. Multiply Strings (M) [N]: digit products into a result array, like 415 Add Strings
 - [ ] 647. Palindromic Substrings (M) [B N]: 5, but count every center
 - [ ] 72. Edit Distance (M) [N T]: the 2D table of 1143 with three choices, insert / delete / replace

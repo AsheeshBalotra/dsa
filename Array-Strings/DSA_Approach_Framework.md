@@ -8,11 +8,11 @@ The steps, in order:
 2. Brute force   the simplest correct solution and its cost, inner loop looking back
 3. Waste         what the inner loop repeats, and the tool that removes it
 4. State         separate i from j, then what to remember about earlier elements
-5. Dry run       run it by hand on a tiny input and the edge cases, then code
+5. Dry run       run it by hand on a tiny input and the edge cases, write the loop body as one "Repeat:" sentence, then code
 6. Better?       after it works: time at the lower bound? can an array become a variable?
 ```
 
-If steps 3 and 4 give no clear answer, use step 7.
+If steps 3 and 4 give no clear answer, use step 7. Section 8 is how to practise, section 9 has worked examples, and section 10 is a method for text in a fixed format.
 
 ---
 
@@ -20,12 +20,13 @@ If steps 3 and 4 give no clear answer, use step 7.
 
 The input size tells you how fast the solution must be. About 10⁸ simple steps run in one second.
 
-| `n` up to | Allowed time       | Usually means      |
-|-----------|--------------------|--------------------|
-| 20        | O(2ⁿ)              | try every subset   |
-| 500       | O(n³)              | three nested loops |
-| 10⁴       | O(n²)              | two nested loops   |
-| 10⁶       | O(n log n) or O(n) | sort, or one pass  |
+| `n` up to | Allowed time       | Usually means                |
+|-----------|--------------------|------------------------------|
+| 20        | O(2ⁿ)              | try every subset             |
+| 500       | O(n³)              | three nested loops           |
+| 10⁴       | O(n²)              | two nested loops             |
+| 10⁵       | O(n log n)         | sort, heap, or binary search |
+| 10⁶       | O(n log n) or O(n) | sort, or one pass            |
 
 Then check what the input looks like. Each answer opens or closes some tools:
 - **Sorted:** binary search and two pointers become possible.
@@ -42,7 +43,7 @@ Then check what the input looks like. Each answer opens or closes some tools:
 - In an interview, say it first. It shows you understand the problem, and it is your fallback answer.
 - Step 3 works by improving it, so you need it in front of you.
 
-**Write the inner loop looking back.** The outer loop `i` is the current element. The inner loop `j` scans the elements before it:
+**Write the inner loop looking back:** the outer loop `i` is the current element, and the inner loop `j` scans the elements before it:
 ```cpp
 for (int i = 0; i < n; i++)          // current element
     for (int j = 0; j < i; j++)      // looks back: everything before i
@@ -80,7 +81,7 @@ Terms:
 - **Two pointers from both ends:** one index at the start and one at the end, moving toward each other.
 - **Dominated work:** a computation whose result is always beaten by another one, so skipping it never loses the answer. How to find it: step 7.
 
-**The two rules for a sliding window.** A window is **valid** when it meets the problem's condition (for example, no repeated letters). A sliding window works only if both rules hold. Otherwise use prefix sum + hash map.
+**The two rules for a sliding window:** a window is **valid** when it meets the problem's condition (for example, no repeated letters). A sliding window works only if both rules hold. Otherwise use prefix sum + hash map.
 - **Rule 1:** if a window is valid, every smaller window inside it is valid. So you can grow `right` without rechecking.
 - **Rule 2:** if a window is invalid, every bigger window containing it is invalid. So once it breaks, move `left`.
 
@@ -95,9 +96,21 @@ Sum <= k, negatives allowed, k = 2:
 [3] invalid     -> [3, -2] valid             (Rule 2 breaks)    -> window fails
 ```
 
-> LOOKUP_BY_ME — was: "Sum == k" examples (`[1,1,1]` valid and `[1,1]` invalid for k = 3). `== k` breaks the rules even with no negative numbers, so the example did not show what negatives do. Apply the rules to the condition the window keeps, such as `sum <= k`: with no negative numbers it holds both rules, and negatives break it.
+**Shortest window, the rules flip:** in 76 Minimum Window Substring, a window is valid when it contains every letter of `t`. Shrinking a valid window can break it, so both rules above fail. Their mirror images hold instead:
+- **Rule 1, flipped:** if a window is valid, every bigger window containing it is valid.
+- **Rule 2, flipped:** if a window is invalid, every smaller window inside it is invalid.
 
-> TODO: Expand — do the two rules hold for shortest-window problems such as 76 Minimum Window Substring? Work out how the window moves there.
+So the window moves the other way round: grow `right` until the window is valid, then move `left` while it stays valid, recording the length at each step. When it breaks, grow `right` again. Each pointer moves at most n times, so it is O(n), plus the length of `t` to count its letters.
+
+Checking the flipped rules:
+```
+Contains A, B and C, s = "ADOBECODEBANC":
+"ADOBEC" valid    -> "ADOBECO" valid     (flipped Rule 1 holds)
+"DOBEC" invalid   -> "OBEC" invalid      (flipped Rule 2 holds)    -> window works, answer "BANC"
+```
+
+- 209 Minimum Size Subarray Sum (sum >= target, positive numbers) follows the same flipped rules.
+- With negative numbers the flipped rules break too, as in 862 Shortest Subarray with Sum at Least K, which needs prefix sums with a monotonic deque.
 
 ---
 
@@ -105,7 +118,7 @@ Sum <= k, negatives allowed, k = 2:
 
 **State:** what you remember about the elements already passed. Ask: **"At index `i`, what do I need to know about everything before `i`?"** Here `i` is the outer loop index (the current element), and "everything before `i`" is what the inner loop `j` from step 2 scans. The answer picks the data structure.
 
-**Separate `i` from `j`.** Rewrite the inner loop's condition so that one side has only `j` and the other side has only `i`. The `i` side is fixed for this `i`, so the inner loop is just searching the earlier elements for one value.
+**Separate `i` from `j`:** rewrite the inner loop's condition so that one side has only `j` and the other side has only `i`. The `i` side is fixed for this `i`, so the inner loop is just searching the earlier elements for one value.
 - The `i` side tells you **what to search for**.
 - What you need to know about it (does it exist, where, how many, the best one) picks the **data structure**.
 
@@ -136,9 +149,7 @@ In the table, `f(j)` is the `j` side, for example `nums[j]` or `prefix[j-1]`.
 | the most recent unmatched item   | `stack`                        | 20 Valid Parentheses: last open bracket  |
 | the k largest or smallest so far | heap                           | 215 Kth Largest                          |
 
-> LOOKUP_BY_ME — was: "sorted structure + binary search", example "`set` with `lower_bound`". `lower_bound` finds the position in O(log n), but counting the elements before it needs `distance`, which is O(n) on a `set`. A Fenwick tree adds a value and counts the values below `x` in O(log n) each.
-
-> TODO: Expand — what a Fenwick tree stores and how it counts in O(log n).
+What a Fenwick tree stores, and how it counts in O(log n): section 5 of `DSA_Techniques.md`.
 
 ---
 
@@ -157,6 +168,94 @@ i   nums[i]   prefix   prefix - k   seen before?   map after             count
 1   2         3        0            yes, 1 time    {0:1, 1:1, 3:1}       1     ([1,2])
 2   3         6        3            yes, 1 time    {0:1, 1:1, 3:1, 6:1}  2     ([3])
 ```
+
+### Before you type: the loop body in one sentence
+
+Coding the process moment by moment ("if I am at this corner, go down") turns every moment into a branch. Describe what repeats instead, in one sentence starting with "Repeat:", then turn its parts into code:
+- Steps that always run in the same order: write them in sequence, with no `if` / `else if`. For text in a fixed format, see section 10.
+- Steps that differ only in numbers: put the numbers in an array and write the code once.
+- A choice of the bigger or smaller of two values: `max` / `min`.
+- More than 2 branches in the sentence: stop and find the rule first.
+
+The sentence for three problems, and the code it turns into:
+```
+54 Spiral Matrix    Repeat: walk the four sides in order, shrinking the box after each   -> 4 loops in sequence, 2 guards
+53 Maximum Subarray Repeat: extend or restart, whichever is bigger                        -> currSum = max(x, currSum + x)
+435 Non-overlapping Repeat: on an overlap, count it and keep the earlier end; else move on -> 1 condition, end = min(...)
+```
+
+### Worked example: 54 Spiral Matrix
+
+My first version, accepted after changing `||` to `&&`: four branches, each checking which corner `(i, j)` is at:
+```cpp
+int m = matrix.size(), n = matrix[0].size();
+int row_start = 0, col_start = 0, row_end = m - 1, col_end = n - 1;
+int i = row_start, j = col_start;
+vector<int> ans;
+while (row_start <= row_end && col_start <= col_end) {
+    if (i == row_start && j == col_start) {            // left to right
+        for (; j <= col_end; j++) ans.push_back(matrix[i][j]);
+        row_start++; i = row_start; j = col_end;
+    } else if (i == row_start && j == col_end) {       // top to bottom
+        for (; i <= row_end; i++) ans.push_back(matrix[i][j]);
+        col_end--; j = col_end; i = row_end;
+    } else if (i == row_end && j == col_end) {         // right to left
+        for (; j >= col_start; j--) ans.push_back(matrix[i][j]);
+        row_end--; i = row_end; j = col_start;
+    } else if (i == row_end && j == col_start) {       // bottom to top
+        for (; i >= row_start; i--) ans.push_back(matrix[i][j]);
+        col_start++; j = col_start; i = row_start;
+    }
+}
+```
+
+- Moment by moment: each branch answers "which corner am I at?", and `i`, `j` are reset by hand after every side.
+- When `row_start == row_end` or `col_start == col_end`, two branches are true at once and the first one wins, which is hard to reason about.
+
+The sentence: "Repeat: walk the four sides in order, shrinking the box after each." The sides always come in the same order, so they are four loops in sequence, and no branch picks the direction. No `i`, `j` or corner checks:
+```cpp
+int top = 0, bottom = matrix.size() - 1, left = 0, right = matrix[0].size() - 1;
+vector<int> ans;
+while (top <= bottom && left <= right) {
+    for (int j = left; j <= right; j++) ans.push_back(matrix[top][j]);        // right
+    top++;
+    for (int i = top; i <= bottom; i++) ans.push_back(matrix[i][right]);      // down
+    right--;
+    if (top <= bottom) {                                                      // a row is left
+        for (int j = right; j >= left; j--) ans.push_back(matrix[bottom][j]); // left
+        bottom--;
+    }
+    if (left <= right) {                                                      // a column is left
+        for (int i = bottom; i >= top; i--) ans.push_back(matrix[i][left]);   // up
+        left++;
+    }
+}
+```
+
+- The two `if`s are guards, not direction choices. After `top++` and `right--`, a single row or column may be left, and without the guard it would be walked a second time, backwards.
+
+Advanced: the four sides differ only in the direction, so the directions go in arrays and the walk is written once. The one decision left is to turn when blocked:
+```cpp
+int m = matrix.size(), n = matrix[0].size();
+int dr[4] = {0, 1, 0, -1}, dc[4] = {1, 0, -1, 0};      // right, down, left, up
+vector<vector<bool>> seen(m, vector<bool>(n, false));
+vector<int> ans;
+int r = 0, c = 0, d = 0;
+for (int k = 0; k < m * n; k++) {
+    ans.push_back(matrix[r][c]);
+    seen[r][c] = true;
+    int nr = r + dr[d], nc = c + dc[d];
+    if (nr < 0 || nr >= m || nc < 0 || nc >= n || seen[nr][nc]) {   // blocked
+        d = (d + 1) % 4;                                             // turn right
+        nr = r + dr[d], nc = c + dc[d];
+    }
+    r = nr, c = nc;
+}
+```
+
+- O(m·n) time, plus O(m·n) for `seen`. The same `dr` / `dc` arrays drive grid BFS and DFS, as in 200 Number of Islands.
+
+All three return `1 2 3 6 9 8 7 4 5` on `[[1,2,3],[4,5,6],[7,8,9]]`.
 
 ---
 
@@ -255,8 +354,6 @@ Remember:  only count up from numbers whose x - 1 is missing
 - **Rotate sections:** at most two problems in a row from one section, skipping solved ones (the order is in the checklist). The first builds the concept and the second tests it. Switching sections after that practises choosing the tool, which is the hard part in an interview. Before coding, say which pattern it is and why.
 - **Say it aloud** while solving. Interviews need it, and it makes each step explicit.
 
-**Practice:** 1 Two Sum, 49 Group Anagrams, 128 Longest Consecutive Sequence, 3 Longest Substring Without Repeating Characters, 1010 Pairs of Songs With Total Durations Divisible by 60, 560 Subarray Sum Equals K, 974 Subarray Sums Divisible by K, 42 Trapping Rain Water.
-
 ---
 
 ## 9. Worked examples
@@ -337,3 +434,115 @@ State:     vector<int> count(k): remainder -> times seen, starting with count[0]
 Algo:      at i, add count[r], then count[r]++                                  O(n)
 Remember:  560 on remainders: a difference looks for the same remainder
 ```
+
+---
+
+## 10. Parsing a string in parts
+
+Use this when the input is text in a fixed format, such as a number, a version or an IP address. The code that goes wrong is one loop that reads everything, with flags (`digitFound`, `signFound`) to remember where it is: every combination of flags is a case to get right. This is the rule from "Before you type" in section 5, applied to text: steps that always run in the same order are written in sequence.
+
+**Parts line:** the input written as its parts in order, with `*` for a part that can repeat and `[ ]` for an optional part. For 8 String to Integer: `spaces* [sign] digits* rest`.
+
+Before coding:
+1. **Write the parts line** from the rules in the problem statement.
+2. **Code one step per part, in order, on one shared `i`.** A `*` part is a `while`, a `[ ]` part is an `if`, and a part you ignore is where you stop. Every step checks `i < n` first.
+3. **Find the edge cases:** for each part, ask "missing? repeated? what ends it?". Write the inputs down before coding, and dry-run them after.
+4. **No `else` for "the next part":** a step's condition failing is what moves on to the next step. An `else` inside the loop, or a flag that says which part I am in, means two parts were merged into one loop.
+
+### Worked example: 8 String to Integer (atoi)
+
+My first version, accepted after 4 wrong submissions: one loop over the whole string, with flags:
+```cpp
+int myAtoi(string s) {
+    if (s.empty()) return 0;
+    string str = "";
+    bool neg = false, digitFound = false, signFound = false;
+
+    for (int i = 0; i < s.size(); i++) {
+        if (s[i] == ' ' && !digitFound && !signFound) continue;
+        if (s[i] == '-' || s[i] == '+') {
+            if (signFound || digitFound) break;
+            neg = (s[i] == '-');
+            signFound = true;
+        }
+        else if (s[i] >= '0' && s[i] <= '9') {
+            digitFound = true;
+            if (s[i] == '0' && str.empty()) continue;
+            str.push_back(s[i]);
+        } else {
+            break;
+        }
+    }
+
+    if (s.empty()) return 0;                       // checks s again, so it never fires
+    str = str.substr(0, 11);                       // only there to avoid overflow
+    long long int ans = 0, mul = 1;
+    for (int i = str.size() - 1; i >= 0; i--) {   // a second pass, from the right
+        ans = ans + (str[i] - '0') * mul;
+        mul *= 10;
+    }
+    if (neg) ans *= -1;
+    if (ans < INT_MIN) return INT_MIN;
+    if (ans > INT_MAX) return INT_MAX;
+    return ans;
+}
+```
+
+- `digitFound` and `signFound` only record which part I am in. Each combination is a case to get right, such as a space after the sign or a sign after a digit, and the judge found 4 of them.
+- `substr(0, 11)` and the second loop exist only to avoid overflow. 11 digits works because leading zeros were skipped, but it is a magic number I would have to justify in an interview.
+- O(n) time, O(n) space for `str`.
+
+The parts line, `spaces* [sign] digits* rest`, and the three questions for each part give the edge cases before any code:
+```
+part     question         input               -> output
+spaces   missing          "42"                -> 42
+         what ends it     "   "               -> 0             (the string ends: i < n in every step)
+sign     repeated         "+-12"              -> 0             (one sign is read, then '-' is not a digit)
+         alone            "-"                 -> 0
+digits   missing          "words and 987"     -> 0
+         leading zeros    "   -042"           -> -42
+         what ends it     "1337c0d3"          -> 1337
+         too many         "2147483648"        -> 2147483647    (clamp to INT_MAX)
+                          "-91283472332"      -> -2147483648   (clamp to INT_MIN)
+                          "-2147483648"       -> -2147483648   (exactly INT_MIN, fits)
+```
+
+One step per part, in order. Where I am in the code says which part I am in, so there are no flags and no `else`:
+```cpp
+int myAtoi(string s) {
+    int i = 0, n = s.size();
+    while (i < n && s[i] == ' ') i++;                    // spaces*
+    int sign = 1;
+    if (i < n && (s[i] == '+' || s[i] == '-'))           // [sign]
+        sign = (s[i++] == '-') ? -1 : 1;
+    long long ans = 0;
+    while (i < n && s[i] >= '0' && s[i] <= '9') {       // digits*, stops at the rest
+        ans = ans * 10 + (s[i++] - '0');
+        if (sign * ans > INT_MAX) return INT_MAX;        // clamp as soon as it is out of range
+        if (sign * ans < INT_MIN) return INT_MIN;
+    }
+    return sign * ans;
+}
+```
+
+- Leading zeros need no code: `0 * 10 + 0` is still 0.
+- The clamp runs after every digit, so `ans` never gets far past `INT_MAX` and `long long` cannot overflow, however many digits follow.
+- O(n) time, O(1) space.
+
+Without `long long`, if the interviewer asks: check before the multiply, replacing the digits loop and the return:
+```cpp
+int ans = 0;
+while (i < n && s[i] >= '0' && s[i] <= '9') {
+    int d = s[i++] - '0';
+    if (ans > (INT_MAX - d) / 10)                 // ans * 10 + d would pass INT_MAX
+        return sign == 1 ? INT_MAX : INT_MIN;
+    ans = ans * 10 + d;
+}
+return sign * ans;
+```
+
+- On `"-2147483648"` the check fires on the last digit and returns `INT_MIN`, which is the right answer, because the value is exactly `INT_MIN`.
+
+Both versions return every output in the edge-case block above.
+
+**Practice:** 1 Two Sum, 49 Group Anagrams, 128 Longest Consecutive Sequence, 3 Longest Substring Without Repeating Characters, 1010 Pairs of Songs With Total Durations Divisible by 60, 560 Subarray Sum Equals K, 974 Subarray Sums Divisible by K, 8 String to Integer (atoi), 165 Compare Version Numbers, 468 Validate IP Address, 42 Trapping Rain Water, 65 Valid Number.

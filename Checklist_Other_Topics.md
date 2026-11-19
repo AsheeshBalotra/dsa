@@ -1,6 +1,6 @@
 # DSA Checklist: Other Topics (SDE 2)
 
-Linked lists, trees, backtracking, DP and graphs. These are the 13 problems from a "25 questions that cover most interview patterns" list that are not string or array problems. The other 12 are all in [Checklist_String_Array.md](arrays-strings/Checklist_String_Array.md).
+Linked lists, trees, backtracking, DP and graphs. These are the 13 problems from a "25 questions that cover most interview patterns" list that are not string or array problems. The other 12 are all in [Checklist_String_Array.md](Array-Strings/Checklist_String_Array.md).
 
 **List tags:** `B` = Blind 75, `N` = NeetCode 150, `T` = LeetCode Top Interview 150.
 **Difficulty:** E / M / H.

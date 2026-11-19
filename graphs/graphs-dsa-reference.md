@@ -1,290 +1,212 @@
-# Graph Data Structures - Complete Reference
+# Graph Notes (DSA interviews)
 
-## Quick Reference Card 🎯
+Quick lookup for graph problems: how to spot the problem type, the representations, the BFS / DFS templates, Union-Find, and the problems I've solved. The concepts are explained in `graph-notes.txt`. In `cpp-notes`, section 24 of `CplusNotes.md` covers marking visited at push time, and section 25 compares the adjacency list and matrix.
 
-### Common Mistakes to Avoid
-❌ **Don't mark visited on pop** - Mark when pushing to queue (prevents duplicates)  
-❌ **Don't forget both directions** - Undirected graphs need edge added twice  
-❌ **Don't confuse V and E** - V = vertices (nodes), E = edges (connections)  
-❌ **Don't use adjacency matrix** - Unless dense graph or need O(1) edge lookup  
-❌ **Don't forget to visit ALL nodes** - Component counting needs outer loop
+**V and E:** V is the number of vertices (nodes), usually the `n` parameter. E is the number of edges (connections), usually `edges.size()`.
 
-### Fast Pattern Matching
-| You See | → Use This | → Why |
-|---------|------------|-------|
-| "How many groups/components?" | DFS/BFS counter loop | Count new component starts |
-| "Shortest path/distance?" | BFS level-order | BFS explores nearest first |
-| "Can schedule/order?" | Topological Sort | Dependency ordering |
-| "Is there a cycle?" | DFS recursion stack | Detect back edges |
-| "Dynamic connectivity?" | Union-Find | Efficient group merging |
-| "Multiple sources spread?" | Multi-source BFS | All sources in queue together |
+## 1. Spotting the problem type
 
-### Code Skeleton (Copy-Paste Ready)
-```cpp
-// 1. Build adjacency list
-vector<vector<int>> adj(n);
-for(auto& e : edges) {
-    adj[e[0]].push_back(e[1]);
-    adj[e[1]].push_back(e[0]); // Remove for directed
-}
+Ask first: directed or undirected? Weighted or unweighted? Then match the question:
 
-// 2. BFS template
-queue<int> q;
-vector<bool> vis(n, false);
-q.push(start);
-vis[start] = true;
+| The question asks                                   | Technique                                         | Why                                   |
+|-----------------------------------------------------|---------------------------------------------------|---------------------------------------|
+| How many groups / connected components?             | DFS / BFS counter loop, or Union-Find             | each new unvisited start is one group |
+| Shortest path, distance or time?                    | BFS if unweighted, Dijkstra if weighted           | BFS reaches the nearest nodes first   |
+| Several sources spreading at once?                  | multi-source BFS                                  | all sources go in the queue together  |
+| Can these be ordered or scheduled?                  | topological sort (DFS + stack, or BFS + indegree) | dependencies come first               |
+| Is there a cycle?                                   | DFS with a recursion stack                        | an edge back into the current path    |
+| Are these in the same group? Edges added over time? | Union-Find                                        | merges groups cheaply                 |
+| Can the graph be 2-coloured?                        | DFS / BFS that tracks colours                     | neighbours must get different colours |
+| Minimum cost to connect everything?                 | minimum spanning tree: Kruskal or Prim            | cheapest edges that join all nodes    |
 
-while(!q.empty()) {
-    int u = q.front(); q.pop();
-    for(int v : adj[u]) {
-        if(!vis[v]) {
-            vis[v] = true;  // Mark at push!
-            q.push(v);
-        }
-    }
-}
-```
+Cost of the main techniques:
+
+| Technique        | Use for                               | Time                  |
+|------------------|---------------------------------------|-----------------------|
+| DFS / BFS        | traversal, connectivity, reachability | O(V + E)              |
+| Union-Find       | dynamic connectivity, grouping        | O(α(n)) per operation |
+| BFS / Dijkstra   | shortest paths                        | O(V + E) for BFS      |
+| Topological sort | ordering with dependencies            | O(V + E)              |
+
+**α(n):** the inverse Ackermann function. It grows so slowly that it is below 5 for any real input, so Union-Find operations are effectively O(1).
 
 ---
 
-## Table of Contents
-1. [Graph Problem Categories](#graph-problem-categories)
-2. [Foundation-Building Problem List](#foundation-building-problem-list)
-3. [Core Techniques](#core-techniques)
-4. [Union-Find Data Structure](#union-find-data-structure)
-5. [Common Patterns](#common-patterns)
-6. [Interview Tips](#interview-tips)
+## 2. Problem categories
+
+### Traversal and connectivity
+
+- Connected components: count them, find them, or check whether two nodes share one.
+- Reachability: can you get from A to B?
+- Path finding: does a path exist?
+
+Examples: Number of Islands, Number of Provinces, Find if Path Exists in Graph.
+
+### Shortest path
+
+- Single source: BFS when unweighted, Dijkstra when weighted.
+- Multi-source: several starting points at once.
+- All pairs: Floyd-Warshall.
+
+Examples: Rotting Oranges, Minimum Knight Moves, Word Ladder.
+
+### Cycles and ordering
+
+- Cycle detection, which works differently in directed and undirected graphs.
+- Topological sort: an order that respects dependencies.
+- Strongly connected components: groups in a directed graph where every node can reach every other, so each group of two or more nodes contains a cycle.
+
+Examples: Course Schedule, Course Schedule II, Alien Dictionary.
+
+### Trees in graphs
+
+- Minimum spanning tree: Kruskal, Prim.
+- Building a tree from a graph.
+- Lowest common ancestor in a tree.
+
+Examples: Min Cost to Connect All Points, Critical Connections in a Network.
+
+### Dynamic connectivity (Union-Find)
+
+- Merging groups as edges join them.
+- Finding the redundant edge: which edge creates a cycle?
+- Edges added over time.
+
+Examples: Redundant Connection, Number of Operations to Make Network Connected.
+
+### Colouring and partitioning
+
+- Bipartite graphs: can two colours cover it with no edge joining the same colour?
+- General colouring of nodes or edges.
+- Splitting nodes into groups.
+
+Examples: Is Graph Bipartite?, Possible Bipartition.
+
+### Special structures
+
+- Directed acyclic graphs (no cycles, edges have a direction).
+- Trees, which are graphs with no cycles.
+- Grids: a 2D array where each cell is a node joined to its neighbours.
+
+Examples: most tree problems, matrix traversal problems.
 
 ---
 
-## Graph Problem Categories
+## 3. Practice order
 
-### 1. **Graph Traversal & Connectivity**
-- **Connected Components** (count, find, check)
-- **Reachability** (can you get from A to B?)
-- **Path Finding** (does a path exist?)
+Each problem adds one new idea to the one before it.
 
-**Examples:** Number of Islands, Number of Provinces, Find if Path Exists
+### Tier 1: grid DFS / BFS (close to 01 Matrix)
 
-### 2. **Shortest Path Problems**
-- **Single Source Shortest Path** (BFS for unweighted, Dijkstra for weighted)
-- **Multi-Source Shortest Path** (multiple starting points)
-- **All Pairs Shortest Path** (Floyd-Warshall)
+1. 200 Number of Islands: count connected groups of 1s with DFS or BFS on the grid. The same mechanics as my 01 Matrix multi-source BFS, but counting groups instead of distances.
+2. 695 Max Area of Island: the same traversal, but return the size of each group instead of counting them.
+3. 733 Flood Fill: the simplest DFS / BFS on a grid, a warm-up.
 
-**Examples:** Rotting Oranges, Minimum Knight Moves, Word Ladder
+### Tier 2: traversal on an explicit graph
 
-### 3. **Cycle Detection & Topological Ordering**
-- **Cycle Detection** (directed vs undirected)
-- **Topological Sort** (ordering with dependencies)
-- **Strongly Connected Components** (cycles in directed graphs)
+4. 547 Number of Provinces (done): the graph comes as an adjacency matrix, `isConnected[i][j]`. Count the connected components. A bridge from grids to graphs.
+5. 1971 Find if Path Exists in Graph (done): the first time I build the adjacency list myself, from an edge list. Then check reachability with DFS or BFS.
+6. 323 Number of Connected Components in an Undirected Graph: the same as 4 and 5, but asks for the count directly. Solve it twice, with DFS / BFS and with Union-Find, to compare them. It is LeetCode Premium, so I solved 1319 instead (Tier 5).
 
-**Examples:** Course Schedule, Course Schedule II, Alien Dictionary
+### Tier 3: BFS for shortest path and levels
 
-### 4. **Tree Problems in Graphs**
-- **Minimum Spanning Tree** (Kruskal's, Prim's)
-- **Tree Construction** from graphs
-- **LCA** (Lowest Common Ancestor) in trees
+7. 994 Rotting Oranges: multi-source BFS, the same shape as 01 Matrix. Several starting points, and the time to reach every cell.
+8. 1197 Minimum Knight Moves (optional, harder): BFS shortest path on an infinite grid that is never given as input.
 
-**Examples:** Min Cost to Connect All Points, Critical Connections
+### Tier 4: cycle detection (new concept)
 
-### 5. **Dynamic Connectivity (Union-Find)**
-- **Merge/Group Operations** (joining components)
-- **Redundancy Detection** (which edge creates cycle?)
-- **Dynamic Graph Updates** (edges added over time)
+9. 207 Course Schedule: a cycle in a directed graph. A visited array alone is not enough here. Also track which nodes are on the current DFS path: reaching one of them again means a cycle.
+10. 841 Keys and Rooms: simpler reachability on a directed graph. Do it before 9 if directed graphs feel new.
 
-**Examples:** Redundant Connection, Number of Operations to Make Network Connected
+### Tier 5: Union-Find (prepares for Accounts Merge)
 
-### 6. **Graph Coloring & Partitioning**
-- **Bipartite Graphs** (2-coloring)
-- **Graph Coloring** (assign colors to nodes/edges)
-- **Graph Partitioning** (split into groups)
-
-**Examples:** Is Graph Bipartite, Possible Bipartition
-
-### 7. **Special Graph Structures**
-- **DAG (Directed Acyclic Graph)** specific problems
-- **Tree-based problems** (since trees are special graphs)
-- **Grid/Matrix graphs** (2D array as graph)
-
-**Examples:** Most tree problems, matrix traversal problems
-
----
-
-## Foundation-Building Problem List
-
-**Ordered to build up complexity gradually — each one introduces exactly one new idea on top of the last.**
-
-### ✅ Tier 1 — Grid-based DFS/BFS (closest to what you already know from 01 Matrix)
-
-1. **200. Number of Islands** — the quintessential starting point. Grid DFS/BFS, counting connected components of 1s. Almost identical mechanics to your 01 Matrix multi-source BFS, but now you're counting groups instead of computing distances.
-
-2. **695. Max Area of Island** — same traversal as #1, but track and return the size of each component instead of just counting components.
-
-3. **733. Flood Fill** — simplest possible DFS/BFS on a grid, good confidence-builder, very close to a warm-up.
-
-### ✅ Tier 2 — Explicit graph (adjacency list) traversal
-
-4. **547. Number of Provinces** ✅ **COMPLETED** — given directly as an adjacency MATRIX (isConnected[i][j]), count connected components. Good bridge from grid-thinking to graph-thinking.
-
-5. **1971. Find if Path Exists in Graph** ✅ **COMPLETED** — build an adjacency list from an edge list yourself (first time you're not handed a ready-made grid), then just check reachability via DFS/BFS.
-
-6. **323. Number of Connected Components in an Undirected Graph** — same as #4/#5 but explicitly asks for the connected-components count; great one to solve twice — once with DFS/BFS, once with Union-Find, to compare both approaches directly.
-
-### Tier 3 — BFS specifically for shortest path / levels
-
-7. **994. Rotting Oranges** — multi-source BFS, essentially the same shape as your 01 Matrix problem (multiple starting points, compute time/distance to reach everything).
-
-8. **1197. Minimum Knight Moves** (optional, trickier) — BFS shortest path on an implicit/infinite grid rather than a given one.
-
-### Tier 4 — Cycle detection (new concept)
-
-9. **207. Course Schedule** — cycle detection in a DIRECTED graph (this is where directed vs undirected starts to matter — a "visited" array alone isn't enough, you need to track "currently in the recursion stack" too, since revisiting a node during the SAME DFS path signals a cycle).
-
-10. **841. Keys and Rooms** — simpler directed-graph reachability question, good before tackling #9 if directed graphs feel unfamiliar.
-
-### Tier 5 — Union-Find practice (directly prepares you for Accounts Merge)
-
-11. **1319. Number of Operations to Make Network Connected** — clean, minimal Union-Find application.
-
-12. **684. Redundant Connection** — Union-Find where you detect the EXACT edge that creates a cycle (a very natural fit for Union-Find's "if two nodes are already in the same group, this new edge is redundant" logic).
+11. 1319 Number of Operations to Make Network Connected (done): a small, clean Union-Find problem.
+12. 684 Redundant Connection: find the exact edge that creates a cycle. If both ends of an edge are already in the same group, that edge is redundant.
 
 ### After this list
 
-**You'll be ready for 721. Accounts Merge** — by then you'll have done grid DFS/BFS, adjacency-list DFS/BFS, BFS shortest-path, cycle detection, and Union-Find individually, so combining Union-Find with the string/hashmap bookkeeping will be the only new piece left to figure out.
+721 Accounts Merge: by then I'll have done grid DFS / BFS, adjacency-list DFS / BFS, BFS shortest path, cycle detection and Union-Find separately. The only new piece is combining Union-Find with the string and hash map bookkeeping.
 
 ---
 
-## Core Techniques
+## 4. Representing a graph
 
-### The "Big 4" Techniques (solve 80% of problems)
-
-| Technique | Use Case | Key Pattern | Time Complexity |
-|-----------|----------|-------------|-----------------|
-| **DFS/BFS** | Traversal, connectivity, reachability | Visit all reachable nodes | O(V + E) |
-| **Union-Find** | Dynamic connectivity, grouping | Merge groups, check same group | O(α(n)) per operation |
-| **Dijkstra/BFS** | Shortest paths | Find minimum distance/cost | O(V + E) for BFS |
-| **Topological Sort** | Ordering with constraints | Process dependencies first | O(V + E) |
-
-### Graph Representation
-
-#### Adjacency List (Preferred)
+Build an adjacency list from an edge list:
 ```cpp
-// Build adjacency list from edge list
-vector<vector<int>> adjList(n);
-for(const auto& edge : edges) {
-    adjList[edge[0]].push_back(edge[1]);
-    adjList[edge[1]].push_back(edge[0]); // For undirected graphs
+vector<vector<int>> adj(n);
+for (auto& e : edges) {
+    adj[e[0]].push_back(e[1]);
+    adj[e[1]].push_back(e[0]);   // undirected only: delete this line for a directed graph
 }
 ```
-- **Space:** O(V + E)
-- **Time to check if edge exists:** O(degree)
-- **Best for:** Most graph problems
 
-#### Adjacency Matrix
+- Directed and undirected graphs differ only in this loop. The BFS and DFS code stays the same: it follows whatever edges exist.
+
+Build an adjacency matrix:
 ```cpp
-vector<vector<int>> adjMatrix(n, vector<int>(n, 0));
-for(const auto& edge : edges) {
-    adjMatrix[edge[0]][edge[1]] = 1;
-    adjMatrix[edge[1]][edge[0]] = 1; // For undirected graphs
+vector<vector<int>> mat(n, vector<int>(n, 0));
+for (auto& e : edges) {
+    mat[e[0]][e[1]] = 1;
+    mat[e[1]][e[0]] = 1;         // undirected only
 }
 ```
-- **Space:** O(V²)
-- **Time to check if edge exists:** O(1)
-- **Best for:** Dense graphs, when you need fast edge lookup
 
----
+| Operation               | Adjacency list | Adjacency matrix |
+|-------------------------|----------------|------------------|
+| Space                   | O(V + E)       | O(V²)            |
+| Add an edge             | O(1)           | O(1)             |
+| Check if an edge exists | O(degree)      | O(1)             |
+| DFS / BFS traversal     | O(V + E)       | O(V²)            |
 
-## Union-Find Data Structure
+### Why the list is O(V + E), not O(V × E)
 
-Union-Find efficiently handles **dynamic connectivity** problems.
+- The outer vector holds V lists, one per vertex.
+- The lists together hold 2E entries for an undirected graph (each edge is stored at both ends), or E for a directed one.
+- So the space is V + 2E, which is O(V + E) in both cases. It is a sum because each edge is stored once or twice, not once per vertex.
 
-### Core Operations
-1. **Union**: Merge two components/groups
-2. **Find**: Check if two nodes belong to the same component/group
+Example with V = 5, E = 6:
+```
+adj[0] = [1, 2]       // 2 entries
+adj[1] = [0, 3]       // 2 entries
+adj[2] = [0, 3, 4]    // 3 entries
+adj[3] = [1, 2, 4]    // 3 entries
+adj[4] = [2, 3]       // 2 entries
 
-### Implementation
-```cpp
-class UnionFind {
-public:
-    vector<int> parent, rank;
-    int components;
-
-    UnionFind(int n) {
-        parent.resize(n);
-        rank.resize(n, 0);
-        components = n;
-        for(int i = 0; i < n; i++) {
-            parent[i] = i; // Each node is its own parent initially
-        }
-    }
-
-    int find(int x) {
-        if(parent[x] != x) {
-            parent[x] = find(parent[x]); // Path compression
-        }
-        return parent[x];
-    }
-
-    void unionNodes(int x, int y) {
-        int rootX = find(x);
-        int rootY = find(y);
-
-        if(rootX != rootY) {
-            components--; // Merge two components into one
-            // Union by rank
-            if(rank[rootX] < rank[rootY]) {
-                parent[rootX] = rootY;
-            } else if(rank[rootX] > rank[rootY]) {
-                parent[rootY] = rootX;
-            } else {
-                parent[rootY] = rootX;
-                rank[rootX]++;
-            }
-        }
-    }
-
-    bool connected(int x, int y) {
-        return find(x) == find(y);
-    }
-
-    int countComponents() {
-        return components;
-    }
-};
+Total: 5 lists (V) + 12 entries (2E) = 17 units
+Matrix: 5 × 5 = 25 units
 ```
 
-### When to Use Union-Find vs DFS/BFS
+### Which one to use
 
-| Problem Type | Use Union-Find | Use DFS/BFS |
-|---|---|---|
-| **Dynamic connectivity** (edges added over time) | ✅ Perfect | ❌ Inefficient |
-| **Static graph traversal** | ❌ Overkill | ✅ Perfect |
-| **Cycle detection** | ✅ Great | ✅ Also great |
-| **Shortest path** | ❌ Can't do it | ✅ Perfect |
-| **Connected components count** | ✅ Great | ✅ Also great |
+- **Adjacency list:** almost always. Most graphs are sparse (E much smaller than V²), and DFS / BFS costs O(V + E) instead of O(V²).
+- **Adjacency matrix:** only for dense graphs (E close to V²), when you need many O(1) edge checks, or for algorithms built on it, such as Floyd-Warshall.
+
+> [!WARNING]
+> A matrix does not fit for typical LeetCode limits. With V up to 2 × 10⁵, a matrix of `int` needs 4 × 10¹⁰ cells × 4 bytes = 160 GB.
 
 ---
 
-## Common Patterns
+## 5. BFS and DFS templates
 
-### BFS Template (Shortest Path/Level Order)
+> [!WARNING]
+> Mark a node visited when you push it, not when you pop it. Marking at pop lets the same node enter the queue several times before it is first popped.
+
+BFS: is `target` reachable from `start`? Levels come out in order, so BFS also gives shortest paths in an unweighted graph:
 ```cpp
-bool bfs(vector<vector<int>>& graph, int start, int target) {
-    vector<bool> visited(graph.size(), false);
+bool bfs(vector<vector<int>>& adj, int start, int target) {
+    vector<bool> visited(adj.size(), false);
     queue<int> q;
     q.push(start);
-    visited[start] = true;
+    visited[start] = true;                  // mark at push
 
-    while(!q.empty()) {
-        int current = q.front();
+    while (!q.empty()) {
+        int u = q.front();
         q.pop();
-
-        if(current == target) return true;
-
-        for(int neighbor : graph[current]) {
-            if(!visited[neighbor]) {
-                visited[neighbor] = true;
-                q.push(neighbor);
+        if (u == target) return true;       // stop early
+        for (int v : adj[u]) {
+            if (!visited[v]) {
+                visited[v] = true;          // mark at push
+                q.push(v);
             }
         }
     }
@@ -292,223 +214,149 @@ bool bfs(vector<vector<int>>& graph, int start, int target) {
 }
 ```
 
-### DFS Template (Connectivity/Components)
-```cpp
-void dfs(vector<vector<int>>& graph, int node, vector<bool>& visited) {
-    visited[node] = true;
+- The `visited` array also stops the search from going round a cycle forever.
 
-    for(int neighbor : graph[node]) {
-        if(!visited[neighbor]) {
-            dfs(graph, neighbor, visited);
-        }
-    }
+DFS, and counting connected components with it:
+```cpp
+void dfs(vector<vector<int>>& adj, int u, vector<bool>& visited) {
+    visited[u] = true;
+    for (int v : adj[u])
+        if (!visited[v]) dfs(adj, v, visited);
 }
 
-// Count connected components
 int countComponents(int n, vector<vector<int>>& edges) {
-    vector<vector<int>> graph(n);
-    for(auto& edge : edges) {
-        graph[edge[0]].push_back(edge[1]);
-        graph[edge[1]].push_back(edge[0]);
+    vector<vector<int>> adj(n);
+    for (auto& e : edges) {
+        adj[e[0]].push_back(e[1]);
+        adj[e[1]].push_back(e[0]);
     }
-
     vector<bool> visited(n, false);
     int components = 0;
-
-    for(int i = 0; i < n; i++) {
-        if(!visited[i]) {
-            components++;
-            dfs(graph, i, visited);
+    for (int i = 0; i < n; i++) {           // outer loop over every node
+        if (!visited[i]) {
+            components++;                   // each new start is a new group
+            dfs(adj, i, visited);
         }
     }
     return components;
 }
 ```
 
-### Multi-Source BFS Template
+- **Trap:** without the outer loop over every node, you only visit the start's own component.
+- **Trap:** in an undirected graph, add each edge in both directions, or some nodes become unreachable.
+
+### Why the nested loops are still O(V + E)
+
+The outer `for` loop with a BFS or DFS inside looks like O(V²), but it is O(V + E). The `visited` array means each node is pushed and popped once, and each adjacency list is scanned once, over all the outer iterations together. The outer loop only finds new starting points. The total work is bounded by the size of the graph, however many components it has.
+
+### Multi-source BFS
+
+Put every source in the queue before the loop starts. The BFS then grows from all of them at once, one level per round:
 ```cpp
-int multiBFS(vector<vector<int>>& grid) {
+// Returns the number of levels processed, counting the sources' own level.
+// In 994 Rotting Oranges, the minutes are this minus 1: the last round finds nothing new.
+// Handle the edge cases separately: no fresh oranges -> 0, fresh ones left over -> -1.
+int multiSourceBFS(vector<vector<int>>& grid, int source, int target, int done) {
     int m = grid.size(), n = grid[0].size();
-    queue<pair<int,int>> q;
+    queue<pair<int, int>> q;
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            if (grid[i][j] == source) q.push({i, j});
 
-    // Add all sources to queue
-    for(int i = 0; i < m; i++) {
-        for(int j = 0; j < n; j++) {
-            if(grid[i][j] == SOURCE_VALUE) {
-                q.push({i, j});
-            }
-        }
-    }
-
-    int time = 0;
-    int dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
-
-    while(!q.empty()) {
-        int size = q.size();
-        for(int i = 0; i < size; i++) {
+    int levels = 0;
+    int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    while (!q.empty()) {
+        int size = q.size();                // one level per round
+        for (int k = 0; k < size; k++) {
             auto [x, y] = q.front();
             q.pop();
-
-            for(int d = 0; d < 4; d++) {
-                int nx = x + dirs[d][0];
-                int ny = y + dirs[d][1];
-
-                if(nx >= 0 && nx < m && ny >= 0 && ny < n &&
-                   grid[nx][ny] == TARGET_VALUE) {
-                    grid[nx][ny] = NEW_VALUE;
+            for (auto& d : dirs) {
+                int nx = x + d[0], ny = y + d[1];
+                if (nx >= 0 && nx < m && ny >= 0 && ny < n && grid[nx][ny] == target) {
+                    grid[nx][ny] = done;    // mark at push
                     q.push({nx, ny});
                 }
             }
         }
-        time++;
+        levels++;
     }
-    return time;
+    return levels;
 }
 ```
 
 ---
 
-## Interview Tips
+## 6. Union-Find
 
-### Problem Recognition
+**Union-Find:** a structure that tracks which group each node belongs to, as edges join groups. Also called a disjoint set union.
 
-When you see a graph problem, ask:
-
-| Question | → Category | → Technique |
-|----------|------------|-------------|
-| "How many connected components?" | **Connectivity** | DFS/BFS or Union-Find |
-| "Shortest path/distance/time?" | **Shortest Path** | BFS (unweighted) or Dijkstra |
-| "Can we order/schedule these?" | **Topological Sort** | DFS + Stack or BFS + indegree |
-| "Is there a cycle?" | **Cycle Detection** | DFS with recursion stack |
-| "Are these in the same group?" | **Union-Find** | Union-Find data structure |
-| "Can we color this graph?" | **Graph Coloring** | DFS/BFS with color tracking |
-| "Find minimum cost to connect?" | **MST** | Kruskal's or Prim's |
-
-### General Approach
-
-1. **Always clarify**: Directed vs undirected? Weighted vs unweighted?
-2. **Start with brute force**: Even if not optimal, show you understand the problem
-3. **Choose representation**: Adjacency list vs matrix based on problem constraints
-4. **Practice both DFS and BFS**: Some problems work better with one approach
-5. **Draw examples**: Visualizing graphs helps immensely
-
-### Time/Space Complexity Cheat Sheet
-
-| Operation | Adjacency List | Adjacency Matrix |
-|-----------|----------------|-------------------|
-| **Space** | O(V + E) | O(V²) |
-| **Add edge** | O(1) | O(1) |
-| **Check if edge exists** | O(degree) | O(1) |
-| **DFS/BFS traversal** | O(V + E) | O(V²) |
-
-### Study Approach
-
-1. **Code each problem from scratch** (don't just read solutions)
-2. **Time yourself** after you understand each problem  
-3. **Practice explaining your approach** out loud
-4. **Try multiple approaches** where applicable (DFS vs BFS vs Union-Find)
-5. **Focus on pattern recognition** - most problems are variations of core patterns
-
----
-
-## Progress Tracker
-
-### ✅ Completed Problems
-
-#### 547. Number of Provinces (BFS with adjacency matrix)
-**Key Learnings:**
-- Given adjacency matrix directly (isConnected[i][j])
-- Count connected components by starting BFS from each unvisited node
-- Pattern: Loop all nodes, increment counter on each new component discovery
-
-#### 1971. Find if Path Exists in Graph (BFS with adjacency list)
-**Date Completed:** Aug 10, 2026  
-**Key Learnings:**
-- Built adjacency list from edge list for the first time
-- Undirected graph: Added edges in BOTH directions
-- O(V + E) space complexity deeply understood
-- BFS pattern: visited tracking at push time prevents duplicates
-- Early termination when destination found
-
-#### 1319. Number of Operations to Make Network Connected (BFS with adjacency list, substituted for premium 323)
-**Date Completed:** Aug 18, 2026
-**Key Learnings:**
-- 323 is LeetCode Premium -- substituted 1319 as the free equivalent for component-counting practice
-- Math: a connected graph on n nodes needs >= n-1 edges (spanning tree property); if
-  connections.size() < n-1, immediately impossible -> return -1
-- Answer once feasible = components - 1 (each extra cable can bridge exactly one pair of
-  separate components; need components-1 merges to reach 1 component)
-- Time complexity is O(V+E) NOT O(V^2) despite the nested for+while loop shape -- the
-  visited[] array guarantees every node is pushed/popped exactly ONCE and every adjacency
-  list entry is scanned exactly once, summed across ALL outer-loop iterations combined
-  (not per-iteration). The outer for loop only discovers new unvisited starting points;
-  total traversal work is bounded by the whole graph's size regardless of how many
-  components exist.
-- Style: check the `connections.size() < n-1` impossibility case BEFORE running BFS, to
-  avoid wasted O(V+E) work when the answer is already known to be -1
-- Union-Find is an equally valid O(V+E) alternative for this problem (not asymptotically
-  faster, just a different implementation style) -- union directly on the raw edge list,
-  no adjacency list needed at all, answer = uf.components - 1
-
-### 📝 Key Learnings
-
-#### Graph Representation Deep Dive
-**Adjacency List vs Matrix** - Understanding O(V+E) Space Complexity
-
-**Why V + E (not V × E)?**
-- V = Number of **Vertices** (nodes) - the `n` parameter in most problems
-- E = Number of **Edges** (connections) - `edges.size()` in most problems
-- **Addition, not multiplication** because:
-  - Outer structure: V empty vectors (one per vertex)
-  - Inner elements: Sum of all neighbor lists = 2E for undirected, E for directed
-  - Example with V=5, E=6:
-    ```
-    adjList[0] = [1, 2]       // 2 elements
-    adjList[1] = [0, 3]       // 2 elements
-    adjList[2] = [0, 3, 4]    // 3 elements
-    adjList[3] = [1, 2, 4]    // 3 elements
-    adjList[4] = [2, 3]       // 2 elements
-
-    Total: 5 vectors (V) + 12 integers (2E) = 17 units
-    Matrix would be: 5×5 = 25 units
-    ```
-
-**When Each Representation Wins:**
-- **Adjacency List (99% of cases):**
-  - Sparse graphs (E << V²) - most real-world graphs
-  - LeetCode constraints like V ≤ 2×10⁵ would need 160GB for matrix!
-  - Better BFS/DFS performance: O(V+E) vs O(V²)
-
-- **Adjacency Matrix (rare):**
-  - Dense graphs (E ≈ V²)
-  - Need O(1) edge lookups frequently
-  - Specific algorithms like Floyd-Warshall
-
-#### Directed vs Undirected Graphs
-**The ONLY difference is in adjacency list construction:**
+- **Find:** returns the root of a node's group. Two nodes are in the same group when they have the same root.
+- **Union:** merges the groups of two nodes.
+- **Path compression:** `find` points each node it passes straight at the root, so later finds are shorter.
+- **Union by rank:** the shorter tree goes under the taller one, so trees stay flat.
 
 ```cpp
-// Undirected: Add edge in BOTH directions
-for(auto& edge : edges) {
-    adjList[edge[0]].push_back(edge[1]);
-    adjList[edge[1]].push_back(edge[0]);  // Bidirectional
-}
+class UnionFind {
+public:
+    vector<int> parent, rank;
+    int components;
 
-// Directed: Add edge in ONE direction only
-for(auto& edge : edges) {
-    adjList[edge[0]].push_back(edge[1]);  // One-way only
-}
+    UnionFind(int n) : parent(n), rank(n, 0), components(n) {
+        for (int i = 0; i < n; i++) parent[i] = i;   // each node is its own root
+    }
+
+    int find(int x) {
+        if (parent[x] != x) parent[x] = find(parent[x]);   // path compression
+        return parent[x];
+    }
+
+    void unionNodes(int x, int y) {
+        int rx = find(x), ry = find(y);
+        if (rx == ry) return;                // already in one group
+        components--;                        // two groups become one
+        if (rank[rx] < rank[ry]) parent[rx] = ry;          // union by rank
+        else if (rank[rx] > rank[ry]) parent[ry] = rx;
+        else { parent[ry] = rx; rank[rx]++; }
+    }
+
+    bool connected(int x, int y) { return find(x) == find(y); }
+    int countComponents() { return components; }
+};
 ```
 
-**BFS/DFS traversal code stays IDENTICAL** - it just follows whatever edges exist.
+Union-Find or DFS / BFS:
 
-**Space difference:**
-- Undirected: O(V + 2E) - each edge stored twice
-- Directed: O(V + E) - each edge stored once
-- Both simplify to O(V + E) in Big-O notation
+| Problem                                      | Union-Find       | DFS / BFS          |
+|----------------------------------------------|------------------|--------------------|
+| Dynamic connectivity (edges added over time) | the best fit     | slow: re-traverses |
+| Traversing a fixed graph                     | more than needed | the best fit       |
+| Cycle detection                              | works well       | works well         |
+| Shortest path                                | cannot do it     | the best fit       |
+| Counting connected components                | works well       | works well         |
 
-#### Critical BFS/DFS Patterns
-- **Visited Array**: Mark at PUSH time (not pop) to avoid queue duplicates
-- **Connected Components**: Loop through all nodes, increment counter for each unvisited start
-- **Path Finding**: Early return when target found, visited prevents cycles
-- **Multi-source BFS**: Add all starting points to queue simultaneously before main loop
+---
+
+## 7. Problems I solved
+
+### 547 Number of Provinces (BFS on an adjacency matrix)
+
+- The graph came as an adjacency matrix, `isConnected[i][j]`.
+- Count components by starting a BFS from each unvisited node, and adding 1 to the counter each time.
+
+### 1971 Find if Path Exists in Graph (BFS on an adjacency list)
+
+Solved Aug 10, 2026.
+- The first time I built an adjacency list from an edge list.
+- Undirected graph: add each edge in both directions.
+- Why the list takes O(V + E) space: section 4.
+- Mark visited at push time, so no node enters the queue twice.
+- Return as soon as the destination is found.
+
+### 1319 Number of Operations to Make Network Connected (BFS on an adjacency list)
+
+Solved Aug 18, 2026, in place of 323, which is LeetCode Premium.
+- A connected graph on n nodes needs at least n - 1 edges (a spanning tree). If `connections.size() < n - 1`, return -1 at once.
+- Check that case before running the BFS, to skip O(V + E) work when the answer is already -1.
+- Otherwise the answer is components - 1: each spare cable joins two separate components, and components - 1 joins give one.
+- Time is O(V + E), not O(V²), despite the `for` loop around the BFS: see "Why the nested loops are still O(V + E)" in section 5.
+- Union-Find is an equally good O(V + E) alternative, not faster, just a different style. Union directly on the edge list, with no adjacency list, and return `uf.components - 1`.
